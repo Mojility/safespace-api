@@ -2,7 +2,7 @@
 # Blame the mess on John Kost (johnnyopcode@gmail.com)
 swagger: '2.0'
 info:
-  title: Virtual Safespace API
+  title: Virtual Safe Space API
   description: tbd
   version: "1.0.0"
 # the domain of the service

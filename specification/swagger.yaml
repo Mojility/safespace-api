@@ -14,6 +14,28 @@ schemes:
 basePath: /v1
 produces:
   - application/json
+
+#
+# Entities:
+#   Person
+#   Post
+#   Room
+#   Membership (joins person to room)
+#   Infraction (id, label)
+#   InfractionEvent (infraction_id, post_id, person_id)
+#   InfractionRating (infraction_id, person_id, rating 0-5)
+#   Emote (id, label, code)
+#   EmoteEvent (emote_id, person_id, post_id)
+#
+
+#
+# API Endpoints
+#
+# X /register
+# /auth/validate - validate invitation auth token
+# 
+
+
 paths:
   /register:
     post:

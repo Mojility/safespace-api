@@ -1,0 +1,104 @@
+# Virtual Safespace API
+# Blame the mess on John Kost (johnnyopcode@gmail.com)
+swagger: '2.0'
+info:
+  title: Virtual Safespace API
+  description: tbd
+  version: "1.0.0"
+# the domain of the service
+host: api.safespace.com
+# array of all schemes that your API supports
+schemes:
+  - https
+# will be prefixed to all paths
+basePath: /v1
+produces:
+  - application/json
+paths:
+  /register:
+    post:
+      summary: 'Register User'
+      description: 'Create a user ID for mobile app use.'
+      parameters:
+        - name: handle
+          in: query
+          description: 'Common name (handle) of a user.'
+          required: true
+          type: string
+        - name: email
+          in: query
+          description: 'eMail of user.'
+          required: true
+          type: string
+      tags:
+        - Person
+      responses:
+        200:
+          description: 'New Person (user) object'
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Person'
+        default:
+          description: 'Unexpected error'
+          schema:
+            $ref: '#/definitions/Error'
+  /registry/user:
+    get:
+      summary: 'Retrieve Person/user rooms et al'
+      description: 'Retrieve the Room(s) subscribed by the Person (user)'
+      parameters:
+        - name: _id
+          in: query
+          description: 'A registered Person (user) identity'
+          required: true
+          type: integer
+          format: int32
+      tags:
+        - Rooms
+      responses:
+        200:
+          description: 'An array of Rooms'
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Room'
+        default:
+          description: 'Unexpected error'
+          schema:
+            $ref: '#/definitions/Error'
+            
+definitions:
+  Person:
+    type: object
+    properties:
+      _id:
+        type: integer
+        format: int32
+        description: 'Unique identifier representing a User/Person.'
+      handle:
+        type: string
+        description: 'The name/handle of a Person (user).'
+      email:
+        type: string
+        description: 'The eMail of a Person (user)'
+  Room:
+    type: object
+    properties:
+      _id:
+        type: integer
+        format: int32
+        description: 'Unique identifier of a Room'
+      name:
+        type: string
+        description: 'A Name for the Room'
+  Error:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+      fields:
+        type: string

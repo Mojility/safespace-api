@@ -3,7 +3,13 @@
 swagger: '2.0'
 info:
   title: Virtual Safe Space API
-  description: tbd
+  description: |
+    A Virtual Safe Space is an online space that operates under similar rules to a facilitated "safe space" group as would be run by community service organizations for marginalized and/or underprivileged communities.
+
+    By virtualizing the Safe Space, organizations are able to reach a wider geographic area with their normally very limited resources.
+
+    The key features of a Virtual Safe Space are self-governing mechanisms such as a group-created free-form "agreement" or "code of conduct" that the users can enforce among each other.
+
   version: "1.0.0"
 # the domain of the service
 host: safespace.commonsroot.com
@@ -11,210 +17,397 @@ host: safespace.commonsroot.com
 schemes:
   - http
 # will be prefixed to all paths
-basePath: /v1
+basePath: /
 produces:
   - application/json
 paths:
-  /register:
+
+  /auth/validate:
     post:
-      summary: 'Register User'
-      description: 'Create a user ID for mobile app use.'
+      summary: Validate an invitation token
+      description: Validates an invitation token and returns whether the user exists or not
       parameters:
+        - name: token
+          in: formData
+          description: The invitation token
+          required: true
+          type: string
+      tags:
+        - Invitation
+      responses:
+        200:
+          description: Invitation token is valid
+          schema:
+            $ref: "#/definitions/ValidateResponse"
+        404:
+          description: Invalid token
+
+  /auth/setup:
+    post:
+      summary: New user setup
+      description: Create a new user from the invitation with the provided handle.
+      parameters:
+        - name: token
+          in: formData
+          description: The invitation token
+          required: true
+          type: string
         - name: handle
-          in: query
-          description: 'Common name (handle) of a user.'
-          required: true
-          type: string
-        - name: email
-          in: query
-          description: 'eMail of user.'
+          in: formData
+          description: The handle for the new user
           required: true
           type: string
       tags:
-        - Person
+        - Invitation
       responses:
         200:
-          description: 'New Person (user) object'
+          description: Invitation token is valid, user is created and authenticated
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/Person'
-        default:
-          description: 'Unexpected error'
-          schema:
-            $ref: '#/definitions/Error'
-  /registry/user:
-    get:
-      summary: 'Retrieve Person (user) Rooms list et al'
-      description: 'Retrieve the Room(s) subscribed by the Person (user)'
-      parameters:
-        - name: _id
-          in: query
-          description: 'A registered Person (user) identity'
-          required: true
-          type: integer
-          format: int32
-      tags:
-        - Rooms
-      responses:
-        200:
-          description: 'An array of Rooms subscribed to by the Person'
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Room'
-        default:
-          description: 'Unexpected error'
-          schema:
-            $ref: '#/definitions/Error'
-  /registry/rooms:
-    get:
-      summary: 'Retrieve the catalog of Rooms'
-      description: 'Lets a user find rooms that they can subscribe to'
-      parameters:
-        - name: _id
-          in: query
-          description: 'A Person _id to qualify access to the catalog'
-          required: true
-          type: integer
-          format: int32
-      tags:
-        - Rooms
-      responses:
-        200:
-          description: 'List of Rooms availble to subscribe to'
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Room'
-        default:
-          description: 'Unexpected Error'
-          schema:
-            $ref: '#/definitions/Error'
-  /registry/subscribe:
+            $ref: "#/definitions/Authorization"
+        404:
+          description: Invalid token
+
+  /auth/join:
     post:
-      summary: 'Subscribe to a specific Room'
-      description: 'Lets a Person subscribe to a specific Room'
+      summary: Join room
+      description: Join an existing user to a room
       parameters:
-        - name: _id
-          in: query
-          description: '_id of the Person (access validation)'
+        - name: token
+          in: formData
+          description: The invitation token
           required: true
-          type: integer
-          format: int32
-        - name: room_id
-          in: query
-          description: '_id of the specific Room'
-          required: true
-          type: integer
-          format: int32
+          type: string
       tags:
-        - Rooms
+        - Invitation
       responses:
         200:
-          description: 'Subscription succeeded'
+          description: Invitation token is valid, user is now a member of the room
           schema:
-            type: string
-        default:
-          description: 'Unexpected Error'
-          schema:
-            $ref: '#/definitions/Error'
-  /posts/create:
+            $ref: "#/definitions/Authorization"
+        404:
+          description: Invalid token
+
+  /metadata:
     post:
-      summary: 'Create a Post'
-      description: 'Create a new Post in a specific Room'
+      summary: Retrieve full metadata
+      description: Retrieve all required metadata for a successful app launch
+      tags:
+        - Initialization
+      responses:
+        200:
+          description: Auth token is valid, metadata attached
+          schema:
+            $ref: "#/definitions/RoomsAndEmotes"
+        404:
+          description: Invalid token
+
+  /room/{room_id}:
+    get:
+      summary: Retrieve posts and infractions
+      description: Retrieve all or outstanding messages and available infraction notes for a room.
       parameters:
-        - name: _id
-          in: query
-          description: 'The _id of the Person (author)'
-          required: true
-          type: integer
-          format: int32
         - name: room_id
-          in: query
-          description: 'The _id of the Room the post is linked to'
+          in: path
+          description: The room id for which posts and infractions will be returned
           required: true
-          type: integer
-          format: int32
+          type: string
+      tags:
+        - Room
+      responses:
+        200:
+          description: Auth token is valid, room data attached
+          schema:
+            $ref: "#/definitions/PostsAndInfractions"
+        404:
+          description: Invalid token
+
+  /room/{room_id}/post:
+    post:
+      summary: Post message
+      description: Post a new message to a room
+      parameters:
+        - name: room_id
+          in: path
+          description: The room id for which posts and infractions will be returned
+          required: true
+          type: string
         - name: body
-          in: query
-          description: 'The Body of the Post to the Room'
+          in: formData
           required: true
           type: string
       tags:
-        - Posts
+        - Room
+        - Post
       responses:
         200:
-          description: The Post Object
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Post'
-        default:
-          description: 'Unexpected Error'
-          schema:
-            $ref: '#/definitions/Error'
-            
+          description: Post was successful
+        404:
+          description: Post unsuccessful
+
+  /room/{room_id}/post/{post_id}/emote:
+    post:
+      summary: Post emote
+      description: Post a new emote to a message in a room
+      parameters:
+        - name: room_id
+          in: path
+          description: The room id containing the post
+          required: true
+          type: string
+        - name: post_id
+          in: path
+          description: The post id on which the emote will be applied
+          required: true
+          type: string
+        - name: emote_id
+          in: formData
+          description: The id of the emote being applied
+          type: integer
+      tags:
+        - Emote
+        - Post
+      responses:
+        200:
+          description: Emote was successful
+        404:
+          description: Emote was unsuccessful
+
+  /room/{room_id}/post/{post_id}/emote/{emote_id}:
+    delete:
+      summary: Remove emote
+      description: Remove a previously posted emote from a message in a room
+      parameters:
+        - name: room_id
+          in: path
+          description: The room id containing the post
+          required: true
+          type: string
+        - name: post_id
+          in: path
+          description: The post id from which the emote will be removed
+          required: true
+          type: string
+        - name: emote_id
+          in: path
+          description: The id of the emote being removed
+          required: true
+          type: integer
+      tags:
+        - Emote
+        - Post
+      responses:
+        200:
+          description: Emote was successfully removed
+        404:
+          description: Emote removal was unsuccessful
+
+  /room/{room_id}/post/{post_id}/infraction:
+    post:
+      summary: Post infraction
+      description: Post a new infraction to a message in a room
+      parameters:
+        - name: room_id
+          in: path
+          description: The room id containing the post
+          required: true
+          type: string
+        - name: post_id
+          in: path
+          description: The post id on which the emote will be removed
+          required: true
+          type: string
+        - name: infraction_id
+          in: formData
+          description: The infraction id being applied
+          required: true
+          type: integer
+      tags:
+        - Infraction
+        - Post
+      responses:
+        200:
+          description: Infraction was successfully posted
+        404:
+          description: Infraction post was unsuccessfull
+
+  /room/{room_id}/post/{post_id}/infraction/{infraction_id}:
+    delete:
+      summary: Remove infraction
+      description: Remove a previously posted infraction from a message in a room
+      parameters:
+        - name: room_id
+          in: path
+          description: The room id containing the post
+          required: true
+          type: string
+        - name: post_id
+          in: path
+          description: The post id from which the infraction will be removed
+          required: true
+          type: string
+        - name: infraction_id
+          in: path
+          description: The id of the infraction being removed
+          required: true
+          type: integer
+      tags:
+        - Infraction
+        - Post
+      responses:
+        200:
+          description: Infraction was successfully removed
+        404:
+          description: Infraction removal was unsuccessful
+
+  /room/{room_id}/infraction:
+    post:
+      summary: Register a new infraction
+      description: Registers a new type of infraction in the room specified
+      parameters:
+        - name: room_id
+          in: path
+          description: The room id for the infraction
+          required: true
+          type: string
+        - name: label
+          in: formData
+          description: The label of the new infraction
+          required: true
+          type: string
+      tags:
+        - Infraction
+        - Room
+      responses:
+        200:
+          description: Infraction was successfully created
+        404:
+          description: New infraction was unable to be created
+
+  /room/{room_id}/infraction/{infraction_id}/rate:
+    post:
+      summary: Rate an infraction
+      description: Apply a rating to an infraction
+      parameters:
+        - name: room_id
+          in: path
+          description: The room id containing the infraction
+          required: true
+          type: string
+        - name: infraction_id
+          in: path
+          description: The infraction id to be rated
+          required: true
+          type: string
+        - name: rating
+          in: formData
+          description: The rating to apply to the infraction
+          required: true
+          type: integer
+      tags:
+        - Infraction
+        - Room
+      responses:
+        200:
+          description: Infraction was successfully rated
+        404:
+          description: Infraction was unable to be rated
+
 definitions:
-  Person:
+
+  ValidateResponse:
     type: object
     properties:
-      _id:
-        type: integer
-        format: int32
-        description: 'Unique identifier representing a User/Person.'
-      handle:
+      person_exists:
+        type: boolean
+      auth_token:
         type: string
-        description: 'The name/handle of a Person (user).'
-      email:
+
+  Authorization:
+    type: object
+    properties:
+      token:
         type: string
-        description: 'The eMail of a Person (user)'
+
   Room:
     type: object
     properties:
-      _id:
+      id:
         type: integer
-        format: int32
-        description: 'Unique identifier of a Room'
       name:
         type: string
-        description: 'A Name for the Room'
-  Membership:
+
+  Emote:
     type: object
     properties:
-      -room_id:
+      id:
         type: integer
-        format: int32
-        description: '_id of a Room object'
-      -person_id:
+      label:
+        type: string
+      code:
+        type: string
+
+  RoomsAndEmotes:
+    type: object
+    properties:
+      rooms:
+        type: array
+        items:
+          $ref: '#/definitions/Room'
+      emotes:
+        type: array
+        items:
+          $ref: '#/definitions/Emote'
+
+  EmoteTotals:
+    type: object
+    properties:
+      id:
         type: integer
-        format: int32
-        description: '_id of a Person object'
+      quantity:
+        type: integer
+
+  InfractionTotals:
+    type: object
+    properties:
+      id:
+        type: integer
+      quantity:
+        type: integer
+
   Post:
     type: object
     properties:
-      -_id:
+      id:
         type: integer
-        format: int32
-        description: '_id of the Posted message'
-      -person_id:
-        type: integer
-        format: int32
-        description: 'The _id of the Person who made the Post'
-      -room_id:
-        type: integer
-        format: int32
-        description: 'The _id of the Room the Post is linked to'
-      -body:
+      body:
         type: string
-        description: 'The message Body'
-  Error:
+      handle:
+        type: string
+      emotes:
+        type: array
+        items:
+          $ref: '#/definitions/EmoteTotals'
+      infractions:
+        type: array
+        items:
+          $ref: '#/definitions/InfractionTotals'
+
+  Infraction:
     type: object
     properties:
-      code:
+      id:
         type: integer
-        format: int32
-      message:
+      label:
         type: string
-      fields:
-        type: string
+
+  PostsAndInfractions:
+    type: object
+    properties:
+      posts:
+        type: array
+        items:
+          $ref: '#/definitions/Post'
+      infractions:
+        type: array
+        items:
+          $ref: '#/definitions/Infraction'

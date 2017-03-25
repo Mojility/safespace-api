@@ -100,3 +100,18 @@ in: auth, room_id, post_id, infraction id
 # `/room/:room_id/post/:post_id/infraction` DELETE
 
 in: auth, room_id, post_id, infraction id
+
+# `/room/:room_id/infraction` POST
+
+in: auth, room_id, label
+
+# `/room/:room_id/infraction` DELETE
+
+in: auth, infraction_id
+ - only the creator of the infraction can destroy it?
+
+# `/room/:room_id/infraction/rate` POST
+
+in: auth, infraction_id, rating 0-5
+ - infraction can only be rated once by each person.
+ - additional ratings on the same infraction by the same person overwrite

@@ -110,7 +110,7 @@ paths:
           in: path
           description: The room id for which posts and infractions will be returned
           required: true
-          type: string
+          type: integer
       tags:
         - Room
       responses:
@@ -130,7 +130,7 @@ paths:
           in: path
           description: The room id for which posts and infractions will be returned
           required: true
-          type: string
+          type: integer
         - name: body
           in: formData
           required: true
@@ -153,12 +153,12 @@ paths:
           in: path
           description: The room id containing the post
           required: true
-          type: string
+          type: integer
         - name: post_id
           in: path
           description: The post id on which the emote will be applied
           required: true
-          type: string
+          type: integer
         - name: emote_id
           in: formData
           description: The id of the emote being applied
@@ -181,12 +181,12 @@ paths:
           in: path
           description: The room id containing the post
           required: true
-          type: string
+          type: integer
         - name: post_id
           in: path
           description: The post id from which the emote will be removed
           required: true
-          type: string
+          type: integer
         - name: emote_id
           in: path
           description: The id of the emote being removed
@@ -210,12 +210,12 @@ paths:
           in: path
           description: The room id containing the post
           required: true
-          type: string
+          type: integer
         - name: post_id
           in: path
           description: The post id on which the emote will be removed
           required: true
-          type: string
+          type: integer
         - name: infraction_id
           in: formData
           description: The infraction id being applied
@@ -239,12 +239,12 @@ paths:
           in: path
           description: The room id containing the post
           required: true
-          type: string
+          type: integer
         - name: post_id
           in: path
           description: The post id from which the infraction will be removed
           required: true
-          type: string
+          type: integer
         - name: infraction_id
           in: path
           description: The id of the infraction being removed
@@ -268,7 +268,7 @@ paths:
           in: path
           description: The room id for the infraction
           required: true
-          type: string
+          type: integer
         - name: label
           in: formData
           description: The label of the new infraction
@@ -292,12 +292,12 @@ paths:
           in: path
           description: The room id containing the infraction
           required: true
-          type: string
+          type: integer
         - name: infraction_id
           in: path
           description: The infraction id to be rated
           required: true
-          type: string
+          type: integer
         - name: rating
           in: formData
           description: The rating to apply to the infraction

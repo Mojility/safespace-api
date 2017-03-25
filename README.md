@@ -114,3 +114,4 @@ in: auth, infraction_id
 
 in: auth, infraction_id, rating 0-5
 -infraction can only be rated once by each person.
+-additional ratings on the same infraction by the same person overwrite

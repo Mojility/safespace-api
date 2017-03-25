@@ -1,0 +1,200 @@
+# Virtual Safespace API
+# Blame the mess on John Kost (johnnyopcode@gmail.com)
+swagger: '2.0'
+info:
+  title: Virtual Safe Space API
+  description: |
+    A Virtual Safe Space is an online space that operates under similar rules to a facilitated "safe space" group as would be run by community service organizations for marginalized and/or underprivileged communities.
+
+    By virtualizing the Safe Space, organizations are able to reach a wider geographic area with their normally very limited resources.
+
+    The key features of a Virtual Safe Space are self-governing mechanisms such as a group-created free-form "agreement" or "code of conduct" that the users can enforce among each other.
+
+  version: "1.0.0"
+# the domain of the service
+host: safespace.commonsroot.com
+# array of all schemes that your API supports
+schemes:
+  - http
+# will be prefixed to all paths
+basePath: /
+produces:
+  - application/json
+paths:
+  /auth/validate:
+    post:
+      summary: Validate an invitation token
+      description: Validates an invitation token and returns whether the user exists or not
+      parameters:
+        - name: token
+          in: query
+          description: The invitation token
+          required: true
+          type: string
+      tags:
+        - Invitation
+      responses:
+        200:
+          description: Invitation token is valid
+          schema:
+            $ref: "#/definitions/ValidateResponse"
+        404:
+          description: Invalid token
+  /auth/setup:
+    post:
+      summary: New user setup
+      description: Create a new user from the invitation with the provided handle.
+      parameters:
+        - name: token
+          in: query
+          description: The invitation token
+          required: true
+          type: string
+        - name: handle
+          in: query
+          description: The handle for the new user
+          required: true
+          type: string
+      tags:
+        - Invitation
+      responses:
+        200:
+          description: Invitation token is valid, user is created and authenticated
+          schema:
+            $ref: "#/definitions/Authorization"
+        404:
+          description: Invalid token
+  /auth/join:
+    post:
+      summary: Join room
+      description: Join an existing user to a room
+      parameters:
+        - name: token
+          in: query
+          description: The invitation token
+          required: true
+          type: string
+      tags:
+        - Invitation
+      responses:
+        200:
+          description: Invitation token is valid, user is now a member of the room
+          schema:
+            $ref: "#/definitions/Authorization"
+        404:
+          description: Invalid token
+  /metadata:
+    post:
+      summary: Retrieve full metadata
+      description: Retrieve all required metadata for a successful app launch
+      tags:
+        - Initialization
+      responses:
+        200:
+          description: Auth token is valid, metadata attached
+          schema:
+            $ref: "#/definitions/Metadata"
+        404:
+          description: Invalid token
+  /room/{room_id}:
+    get:
+      summary: Retrieve posts and infractions
+      description: Retrieve all or outstanding messages and available infraction notes for a room.
+      parameters:
+        - name: room_id
+          in: path
+          description: The room id for which posts and infractions will be returned
+          required: true
+          type: string
+      tags:
+        - Room
+      responses:
+        200:
+          description: Auth token is valid, room data attached
+          schema:
+            $ref: "#/definitions/PostsAndInfractions"
+        404:
+          description: Invalid token
+# /room/:room_id/post post
+# /room/:room_id/post/:post_id/emote post
+# /room/:room_id/post/:post_id/emote/:emote_id delete
+# /room/:room_id/post/:post_id/infraction post
+# /room/:room_id/post/:infraction_id delete
+# /room/:room_id/post post
+# /room/:room_id/post/:post_id/emote post
+# /room/:room_id/post/:post_id/emote/:emote_id delete
+# /room/:room_id/post/:post_id/infraction post
+# /room/:room_id/post/:post_id/infraction/:infraction_id delete
+definitions:
+  ValidateResponse:
+    type: object
+    properties:
+      person_exists:
+        type: boolean
+  Authorization:
+    type: object
+    properties:
+      token:
+        type: string
+  Room:
+    type: object
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+  Emote:
+    type: object
+    properties:
+      id:
+        type: integer
+      label:
+        type: string
+      code:
+        type: string
+  Metadata:
+    type: object
+    properties:
+      rooms:
+        type: array
+        items:
+          $ref: '#/definitions/Room'
+      emotes:
+        type: array
+        items:
+          $ref: '#/definitions/Emote'
+  EmoteEvents:
+    type: object
+    properties:
+      id:
+        type: integer
+      quantity:
+        type: integer
+  InfractionEvents:
+    type: object
+    properties:
+      id:
+        type: integer
+      quantity:
+        type: integer
+  Post:
+    type: object
+    properties:
+      id:
+        type: integer
+      body:
+        type: string
+      handle:
+        type: string
+      emotes:
+        type: array
+        items:
+          $ref: '#/definitions/EmoteEvents'
+      infractions:
+        type: array
+        items:
+          $ref: '#/definitions/InfractionEvents'
+  PostsAndInfractions:
+    type: array
+    items:
+      $ref: '#/definitions/Post'
